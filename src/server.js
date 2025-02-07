@@ -26,7 +26,7 @@ app.use(compression());
 app.use(morgan("dev"));
 app.use("/auth", authRoutes); // Add authentication routes
 app.use("/users", userRoutes);
-app.use("/language", getLanguages);
+app.use("/languages", getLanguages);
 
 
 // Test route
