@@ -41,29 +41,69 @@ const googleCallback = (req, res, next) => {
 };
 
 const logout = (req, res) => {
-  req.logout(() => {
-    res.redirect("/");
+  res.clearCookie("authToken", {
+    httpOnly: true,
+    sameSite: "Lax",
   });
+  res.status(200).json({ message: "Logged out successfully" });
 };
 
-const verifyToken = async (req, res) => {
-  const { token } = req.body;
 
+const verifyToken = async (req, res) => {
+  let idToken = req.body.idToken;
+  if (!idToken) {
+    idToken = req.cookies.authToken;
+  }
+  if (!idToken) {
+    return res.status(401).json({ error: true, message: "Unauthorized: No token provided" });
+  }
   try {
-    const decodedToken = await admin.auth().verifyIdToken(token);
+    // ✅ Verify Firebase ID Token
+    const decodedToken = await admin.auth().verifyIdToken(idToken);
     const { uid, email } = decodedToken;
 
-    const backendToken = jwt.sign({ uid, email }, process.env.JWT_SECRET, { expiresIn: "7d" });
+    res.cookie("authToken", idToken, {
+      httpOnly: true, 
+      // secure: process.env.NODE_ENV === "production",
+      sameSite: "Lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
 
-    res.json({
-      message: "✅ Authentication Successful!",
-      backendToken,
+    return res.status(200).json({
+      message: "✅ Authentication Verified!",
       user: { uid, email },
     });
   } catch (error) {
-    res.status(401).json({ message: "❌ Invalid Token", error: error.message });
+    console.error("Token verification error:", error);
+    return res.status(401).json({ message: "❌ Invalid Token", error: error.message });
   }
-}
+};
+
+export const checkAuthStatus = async (req, res) => {
+  let idToken = req.cookies.authToken; // ✅ Read token from cookie
+
+  if (!idToken) {
+    return res.status(401).json({ error: true, message: "Unauthorized: No token provided" });
+  }
+
+  try {
+    // ✅ Verify Firebase ID Token
+    const decodedToken = await admin.auth().verifyIdToken(idToken);
+    const { uid, email } = decodedToken;
+
+    console.log("✅ User Verified (Refresh):", { uid, email });
+
+    return res.status(200).json({
+      message: "✅ Authentication Verified!",
+      user: { uid, email },
+    });
+
+  } catch (error) {
+    console.error("❌ Token verification failed on refresh:", error);
+    return res.status(401).json({ error: true, message: "Invalid Token" });
+  }
+};
+
 
 
 export const signupUserAndSendOtp = async (req, res) => {
@@ -211,6 +251,13 @@ export const loginUser = async (req, res) => {
       return res.status(500).json({ error: true, message: "Failed to generate token" });
     }
 
+    res.cookie("authToken", tokenResponse.token, {
+      httpOnly: true, // Prevents JavaScript access (XSS protection)
+      // secure: process.env.NODE_ENV === "production", // Secure in production
+      sameSite: "Lax", // Prevents CSRF attacks
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
+
     return res.status(200).json({
       error: false,
       message: "Login successful",
@@ -291,19 +338,22 @@ export const resetPassword = async (req, res) => {
 
 export const getUserProfile = async (req, res) => {
   try {
-    // Extract token from Authorization header
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    // ✅ Extract token from HTTP-only cookie
+    console.log("Cookies received:", req.cookies);
+    if (!req.cookies || !req.cookies.authToken) {
       return res.status(401).json({ error: true, message: "Unauthorized: Missing token" });
     }
+    let firebaseToken= req.cookies.authToken;
 
-    const token = authHeader.split(" ")[1];
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const userId = decoded.id || decoded.userId || decoded.uid; // Ensure correct field
+    // ✅ Verify Firebase token using Firebase Admin SDK
+    const decodedToken = await admin.auth().verifyIdToken(firebaseToken);
+    const userId = decodedToken.uid; // ✅ Firebase always provides `uid`
+
     if (!userId) {
       return res.status(401).json({ error: true, message: "Unauthorized: Invalid token" });
     }
-    
+
+    // ✅ Fetch user from the database
     const user = await userDb.user.findUnique({
       where: { id: userId },
       select: {
@@ -316,17 +366,15 @@ export const getUserProfile = async (req, res) => {
         status: true,
         currentOccupation: true,
         skills: true,
-        years_of_experience: true,  // ✅ Correct field name
+        years_of_experience: true,
         location: true,
         preferredLanguage: {
           select: {
-            language_name: true,  // ✅ Fetch preferred language name
+            language_name: true,
           },
         },
       },
     });
-    
-    
 
     if (!user) {
       return res.status(404).json({ error: true, message: "User not found" });
@@ -338,6 +386,7 @@ export const getUserProfile = async (req, res) => {
     return res.status(500).json({ error: true, message: "Internal Server Error" });
   }
 };
+
 
 export const updateUserProfile = async (req, res) => {
   try {
@@ -445,6 +494,8 @@ export const updateUserProfile = async (req, res) => {
     return res.status(500).json({ error: true, message: "Internal server error" });
   }
 };
+
+
 
 
 

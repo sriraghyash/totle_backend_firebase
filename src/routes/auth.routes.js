@@ -1,5 +1,5 @@
 import express from "express";
-import { completeSignup, loginUser, otpVerification, resetPassword, resetUser, signupUserAndSendOtp, verifyToken } from "../controllers/auth.controller.js";
+import { checkAuthStatus, completeSignup, getUserProfile, loginUser, logout, otpVerification, resetPassword, resetUser, signupUserAndSendOtp, verifyToken } from "../controllers/auth.controller.js";
 import { loginLimiter, signupLimiter } from "../middlewares/rateLimiter.js";
 
 const router = express.Router();
@@ -25,11 +25,14 @@ router.post("/signup/verifyOtp",signupLimiter, otpVerification);
  * ✅ Secure Login with Email/Mobile & Password
  */
 router.post("/login", loginLimiter, loginUser);
+router.get("/profile", getUserProfile)
+router.post("/logout", logout);
 
 router.post('/resetUser', resetUser);
 router.post('/resetPassword', resetPassword)
 router.post('/verifyOtp', otpVerification);
 router.post('/verifyToken', verifyToken);
+router.get('/verifyToken', checkAuthStatus);
 
 
 // router.put("/updateUser/:userId", upload.single('image'), upduser)

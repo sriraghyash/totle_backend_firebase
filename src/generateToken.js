@@ -34,8 +34,8 @@ export async function generateToken(identifier) {
     const uid = userRecord.uid;
     const customToken = await admin.auth().createCustomToken(uid);
 
-    console.log("🔥 UID:", uid);
-    console.log("🔥 Firebase Custom Token:", customToken);
+    // console.log("🔥 UID:", uid);
+    // console.log("🔥 Firebase Custom Token:", customToken);
 
     return { uid, token: customToken };
   } catch (error) {

@@ -14,6 +14,7 @@ import authMiddleware from "./middlewares/authMiddleware.js";
 // import { getLanguages } from "./controllers/language.controller.js";
 import { createServer } from "http";
 import { Server } from "socket.io";
+import cookieParser from "cookie-parser";
 
 
 dotenv.config();
@@ -26,11 +27,22 @@ const io = new Server(httpServer, {
 });
 
 app.use(express.json());
-app.use(cors({
-  origin: ['https://www.totle.co', 'https://mail.google.com', 'http://localhost:3001', 'http://localhost:3000'],
-  credentials: true,
-  allowedHeaders: ["Authorization", "Content-Type"]
-}));
+app.use(cookieParser());
+
+app.use(
+  cors({
+    origin: [
+      "https://www.totle.co",
+      "https://mail.google.com",
+      "http://localhost:3001",
+      "http://localhost:3000",
+    ],
+    credentials: true, // ✅ Ensures cookies are sent
+    allowedHeaders: ["Authorization", "Content-Type"],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // ✅ Allow necessary HTTP methods
+  })
+);
+
 app.use(helmet());
 
 io.on("connection", (socket) => {
@@ -54,7 +66,7 @@ app.use(compression());
 app.use(morgan("dev"));
 app.use("/auth", authRoutes); // Add authentication routes
 app.use("/users", userRoutes);
-app.use("/language", languageRoutes);
+app.use("/languages", languageRoutes);
 app.use("/api/languages", languageRoutes); // ✅ Register the languages route
 app.use("/session", authMiddleware, sessionRoutes);
 
