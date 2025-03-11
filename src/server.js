@@ -18,6 +18,8 @@ import languageRoutes from './routes/languages.routes.js'
 import path from "path";
 import { fileURLToPath } from "url";
 import {syncDatabase} from './config/syncDb.js';
+import dbRoutes from "./routes/db.routes.js"; // ✅ Import the new database route
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -66,6 +68,7 @@ app.use("/languages", languageRoutes);
 app.use("/api/languages", languageRoutes); // ✅ Register the languages route
 // app.use("/session", authMiddleware, sessionRoutes);
 app.use("/admin", adminRoutes);
+app.use("/api/db", dbRoutes); // ✅ Register the route for fetching table names
 
 
 // Test route
