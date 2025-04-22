@@ -7,6 +7,9 @@ import { User } from '../Models/UserModel.js';
 import { Language } from '../Models/LanguageModel.js';
 import { Question } from '../Models/QuestionModel.js';
 import {Responses} from '../Models/ResponsesModel.js';
+import { logAdminAction } from '../utils/logAdminAction.js';
+import { AdminLog } from '../Models/AdminLog.js';
+
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
@@ -112,6 +115,18 @@ export const createBlog = async (req, res) => {
         image,
         adminId, 
     });
+    let admin = await Admin.findOne({ where: { id: adminId } });
+
+    await logAdminAction({
+      adminId,
+      adminName: admin.name,
+      action: 'CREATE',
+      tableName: 'blogs',
+      rowId: blog.id,
+      previousData: null,
+      newData: blog.toJSON(),
+    });
+    
 
     res.status(201).json({ message: "Blog created successfully", blog });
   } catch (error) {
@@ -199,12 +214,22 @@ export const updateBlog = async (req, res) => {
     if (!blog) return res.status(404).json({ message: "Blog not found" });
     if (blog.adminId !== adminId) return res.status(403).json({ message: "Unauthorized" });
 
-    const updatedBlog = await Blog.update({
-      where: { id },
-      data: { title, slug, description, content, image },
+    const previousBlogData = blog.toJSON();
+
+    await blog.update({ title, slug, description, content, image });
+
+    await logAdminAction({
+      adminId,
+      adminName: req.admin.name,
+      action: 'UPDATE',
+      tableName: 'blogs',
+      rowId: blog.id,
+      previousData: previousBlogData,
+      newData: blog.toJSON(),
     });
 
-    res.json({ message: "Blog updated successfully", blog: updatedBlog });
+
+    res.json({ message: "Blog updated successfully", blog });
   } catch (error) {
     res.status(500).json({ message: "Server error", error });
   }
@@ -223,6 +248,16 @@ export const deleteBlog = async (req, res) => {
     if (blog.adminId !== adminId) return res.status(403).json({ message: "Unauthorized" });
 
     await Blog.destroy({ where: { id } });
+    await logAdminAction({
+      adminId,
+      adminName: req.admin.name,
+      action: 'DELETE',
+      tableName: 'blogs',
+      rowId: blog.id,
+      previousData: blog.toJSON(),  
+      newData: null,
+    });
+    
 
     res.json({ message: "Blog deleted successfully" });
   } catch (error) {
@@ -342,6 +377,16 @@ export const createOrUpdateSurvey = async (req, res) => {
           });
         }
       }
+      // let adminName = await Admin.findOne({ where: { id: adminId } });
+      await logAdminAction({
+        adminId: req.admin.id,
+        // adminName,      
+        action: "UPDATE",
+        tableName: "surveys",
+        rowId: surveyId,
+        previousData: previousSurveyData,
+        newData: survey.toJSON(),
+      });
     } else {
       // ✅ Step 1: Create new survey
       survey = await Survey.create({
@@ -358,6 +403,16 @@ export const createOrUpdateSurvey = async (req, res) => {
           })
         )
       );
+      // let adminName = await Admin.findOne({ where: { id: adminId } });
+      // console.log('admin name', adminName.dataValues.name)
+      await logAdminAction({
+        adminId,
+        // adminName: adminName.dataValues.name,
+        action: "CREATE",
+        tableName: "surveys",
+        rowId: survey.id,
+        newData: survey.toJSON(),
+      });
     }
 
     const updatedSurvey = await Survey.findByPk(surveyId, {
@@ -785,11 +840,21 @@ export const deleteSurveyById = async (req, res) => {
       return res.status(404).json({ message: "Survey not found" });
     }
 
+    const previousData = survey.toJSON();
     // ✅ Delete all questions linked to this survey
     await Question.destroy({ where: { surveyId } });
 
     // ✅ Delete the survey
     await Survey.destroy({ where: { id: surveyId } });
+    // let admin = await Admin.findOne({ where: { id: adminId } });
+    await logAdminAction({
+      adminId: req.admin.id,
+      // adminName: admin.name,
+      action: "DELETE",
+      tableName: "surveys",
+      rowId: surveyId,
+      previousData,
+    });
 
     res.status(200).json({ message: "Survey and associated questions deleted successfully" });
   } catch (error) {
@@ -797,3 +862,34 @@ export const deleteSurveyById = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
+export const adminLogs= async (req, res) => {
+  try {
+    const logs = await AdminLog.findAll({ order: [["createdAt", "DESC"]] });
+    res.status(200).json({ logs });
+  } catch (err) {
+    console.error("Failed to fetch admin logs", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const getChangeHistory = async (req, res) => {
+  try {
+    const { tableName, rowId } = req.params;
+
+    if (!tableName || !rowId) {
+      return res.status(400).json({ message: "Missing table name or row ID" });
+    }
+
+    const logs = await AdminLog.findAll({
+      where: { table_name: tableName, row_id: rowId },
+      order: [["createdAt", "ASC"]],
+    });
+
+    return res.status(200).json({ success: true, logs });
+  } catch (error) {
+    console.error("❌ Error fetching change history:", error);
+    return res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+

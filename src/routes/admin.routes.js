@@ -1,6 +1,6 @@
 import express from "express";
 
-import { adminLogin, createBlog, createOrUpdateSurvey, deleteBlog, deleteSurveyById, displayQuestionsBySurveyId, getAdminBlogs, getAdminDetails, getAllBlogs, getAllSuggestionsForAdmin, getAllSurveys, getAllUsers, getBlogById, getQuestionsBySurveyId, getResultsBySurveyId, getSurveyNames, getSurveyResults, submitSurveyResponse, updateBlog, uploadImage } from "../controllers/admin.controller.js";
+import { adminLogin, adminLogs, createBlog, createOrUpdateSurvey, deleteBlog, deleteSurveyById, displayQuestionsBySurveyId, getAdminBlogs, getAdminDetails, getAllBlogs, getAllSuggestionsForAdmin, getAllSurveys, getAllUsers, getBlogById, getChangeHistory, getQuestionsBySurveyId, getResultsBySurveyId, getSurveyNames, getSurveyResults, submitSurveyResponse, updateBlog, uploadImage } from "../controllers/admin.controller.js";
 import { loginLimiter } from "../middlewares/rateLimiter.js";
 import { authenticateAdmin } from "../middlewares/adminMiddleware.js";
 const router = express.Router();
@@ -43,6 +43,9 @@ router.get("/surveys/surveyResults/:surveyId", getResultsBySurveyId);
 router.post("/surveys/:surveyId/responses", submitSurveyResponse);
 router.get("/getSuggestions", getAllSuggestionsForAdmin);
 router.delete("/surveys/:surveyId", deleteSurveyById);
+router.get("/logs", adminLogs);
+router.get("/logs/history/:tableName/:rowId", getChangeHistory);
+
 
 export default router;
 
