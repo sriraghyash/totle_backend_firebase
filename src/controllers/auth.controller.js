@@ -337,6 +337,64 @@ export const resetPassword = async (req, res) => {
     }
 };
 
+// Inside auth.controller.js
+
+export const requestResetLink = async (req, res) => {
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ error: true, message: "Email is required" });
+
+  try {
+    const user = await User.findOne({ where: { email } });
+    if (!user) return res.status(404).json({ error: true, message: "User not found" });
+
+    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: "15m" });
+
+    const resetLink = `http://localhost:3000/reset-password?token=${token}`;
+
+   
+    let transporter = nodemailer.createTransport({
+      service: "gmail", 
+      auth: {
+        user: process.env.MAIL_USER,
+        pass: process.env.MAIL_PASS
+      }
+    });
+
+    await transporter.sendMail({
+      to: email,
+      subject: "Reset your password",
+      html: `<p>Click below to reset your password:</p><a href="${resetLink}">${resetLink}</a>`
+    });
+
+    return res.status(200).json({ error: false, message: "Reset link sent to your email" });
+  } catch (err) {
+    console.error("Error in requestResetLink:", err);
+    return res.status(500).json({ error: true, message: "Internal Server Error" });
+  }
+};
+export const resetPasswordWithToken = async (req, res) => {
+  const { token, newPassword } = req.body;
+  if (!token || !newPassword) {
+    return res.status(400).json({ error: true, message: "Token and new password required" });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = decoded.id;
+
+    const user = await User.findByPk(userId);
+    if (!user) return res.status(404).json({ error: true, message: "User not found" });
+
+    const hashedPassword = await hashPassword(newPassword);
+    await User.update({ password: hashedPassword }, { where: { id: userId } });
+
+    return res.status(200).json({ error: false, message: "Password reset successfully" });
+  } catch (err) {
+    console.error("Error in resetPasswordWithToken:", err);
+    return res.status(400).json({ error: true, message: "Invalid or expired token" });
+  }
+};
+
 export const getUserProfile = async (req, res) => {
   try {
     // Extract token from Authorization header

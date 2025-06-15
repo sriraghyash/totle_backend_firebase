@@ -1,5 +1,5 @@
 import express from "express";
-import { getUserCount, getUserProfile, loginUser, logout, otpVerification, resetPassword ,getAllBetaUsers, resetUser, sendContactEmail, signupUserAndSendOtp, updateUserProfile, verifyToken, submitSuggestion, verifyResetOtp, getWelcome, updateWelcome, getUpdates, getBetaUserProfile } from "../controllers/auth.controller.js";
+import { getUserCount, getUserProfile, loginUser, logout, otpVerification, resetPassword ,getAllBetaUsers, resetUser, sendContactEmail, signupUserAndSendOtp, updateUserProfile, verifyToken, submitSuggestion, verifyResetOtp, getWelcome, updateWelcome, getUpdates, getBetaUserProfile,requestResetLink,resetPasswordWithToken } from "../controllers/auth.controller.js";
 import { loginLimiter, signupLimiter } from "../middlewares/rateLimiter.js";
 import authMiddleware from "../middlewares/authMiddleware.js";
 import upload from "../middlewares/multer.js";
@@ -29,6 +29,8 @@ router.post("/login", loginUser);
 
 router.post('/resetUser', resetUser);
 router.post('/resetPassword', resetPassword)
+router.post("/request-reset-link", requestResetLink);
+router.post('/reset-password-token', resetPasswordWithToken);
 router.post('/verifyOtp', otpVerification);
 router.get('/user', getUserProfile);
 router.post("/logout", logout);
