@@ -349,21 +349,42 @@ export const requestResetLink = async (req, res) => {
 
     const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: "15m" });
 
-    const resetLink = `http://localhost:3000/reset-password?token=${token}`;
+    const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
 
    
     let transporter = nodemailer.createTransport({
       service: "gmail", 
       auth: {
-        user: process.env.MAIL_USER,
-        pass: process.env.MAIL_PASS
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
       }
     });
 
     await transporter.sendMail({
       to: email,
       subject: "Reset your password",
-      html: `<p>Click below to reset your password:</p><a href="${resetLink}">${resetLink}</a>`
+      html: `<p>Hello,</p>
+
+            <p>We received a request to reset your TOTLE password. Click the button below to reset it:</p>
+
+            <p style="text-align: center;">
+              <a href="${resetLink}" target="_self" style="
+                background-color: #4c51bf;
+                color: white;
+                padding: 10px 20px;
+                border-radius: 6px;
+                text-decoration: none;
+                display: inline-block;
+                margin: 10px auto;
+              ">Reset My Password</a>
+            </p>
+
+            <p>This link will expire in 15 minutes for your security.</p>
+
+            <p>If you didn’t request this, you can safely ignore this email.</p>
+
+            <p>— The TOTLE Team</p>
+          `
     });
 
     return res.status(200).json({ error: false, message: "Reset link sent to your email" });
