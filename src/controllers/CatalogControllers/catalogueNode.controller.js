@@ -35,11 +35,37 @@ async function cacheDel(pattern) {
   }
 }
 
-// 🟢 Create node
+// 🟢 Create node with backend-level role resolution
 export const createNode = async (req, res) => {
   try {
-    const node = await CatalogueNode.create(req.body);
+    const { parent_id } = req.body;
+    // console.log("Creating node with parent_id:", req.body);
+
+    // Fetch parent if exists
+    let parentNode = null;
+    if (parent_id) {
+      parentNode = await CatalogueNode.findByPk(parent_id);
+      if (!parentNode) {
+        return res.status(400).json({ error: "Parent node not found" });
+      }
+    }
+
+    // Determine type flags
+    const newNode = {
+      ...req.body,
+      is_domain: req.body.is_domain,
+    };
+
+    if(parentNode.is_domain){
+      newNode.is_subject = true;
+    }else if(parentNode.is_subject){
+      newNode.is_topic = true;
+    }
+    // console.log("Creating node with data:", newNode);
+
+    const node = await CatalogueNode.create(newNode);
     await cacheDel(`catalogue:children:${node.parent_id}*`);
+
     return res.status(201).json(node);
   } catch (err) {
     console.error("Error creating node:", err, err.message);
