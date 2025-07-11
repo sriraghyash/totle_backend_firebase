@@ -15,7 +15,7 @@ import languageRoutes from './routes/languages.routes.js'
 // import topicRoutes from './routes/CatalogRoutes/topic.routes.js';
 // import subjectRoutes from './routes/CatalogRoutes/subject.routes.js';
 import catalogueRoutes from './routes/CatalogRoutes/catalogue.routes.js'; // ✅ Catalogue API
-
+import FeedbackRoutes from "./routes/feedback.routes.js"; // ✅ feedback route;
 // import gradeRoutes from './routes/CatalogRoutes/grade.routes.js';
 // import boardRoutes from './routes/CatalogRoutes/board.routes.js';
 // import educationRoutes from './routes/CatalogRoutes/education.routes.js';
@@ -94,6 +94,7 @@ app.use("/api/catalogue", catalogueRoutes);
 app.use("/api/tests", testRoutes); // ✅ expose test endpoints
 app.use("/api/stream", streamRoutes);
 app.use("/api/payment", paymentRoutes);
+app.use("/api/feedback",FeedbackRoutes);
 
 
 
