@@ -81,7 +81,7 @@ app.use("/auth", authRoutes); // Add authentication routes
 app.use("/users", userRoutes);
 app.use("/languages", languageRoutes);
 app.use("/api/languages", languageRoutes); // ✅ Register the languages route
-// app.use("/session", authMiddleware, sessionRoutes);
+app.use("/api/session", sessionRoutes);
 app.use("/admin", adminRoutes);
 app.use('/api', ctaRoutes);
 app.use("/api", platformCtaRoutes);
@@ -120,7 +120,7 @@ app.get("/db", async (req, res) => {
 const startServer = async () => {
   try {
     // Step 1: Run the syncDatabase function to set up the database before starting the server
-    await syncDatabase();  // Automatically run the syncDatabase on server start
+    // await syncDatabase();  // Automatically run the syncDatabase on server start
 
     // Step 2: Once syncDatabase has finished, start the server
     const PORT = process.env.PORT || 5000;

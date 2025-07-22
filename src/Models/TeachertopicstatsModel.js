@@ -28,5 +28,7 @@ rating: {
 }
 
 },{
- tableName: 'teacher_topic_stats',
+  schema: 'catalog', // ✅ Apply catalog schema
+  tableName: 'teacher_topic_stats',
+  timestamps: true,
 })

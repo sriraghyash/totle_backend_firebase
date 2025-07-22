@@ -279,23 +279,22 @@ export const evaluateTest = async (req, res) => {
     
       const topicId = test.topic_uuid;
       const topic = await CatalogueNode.findByPk(topicId);
+      const teacherId = test.user_id;
 
-  const teacherId = test.user_id;
+      const statExists = await Teachertopicstats.findOne({
+        where: { teacherId, node_id:topicId }
+      });
 
-  const statExists = await Teachertopicstats.findOne({
-    where: { teacherId, node_id:topicId }
-  });
-
-  if (!statExists) {
-    await Teachertopicstats.create({
-      teacherId,
-      node_id:topicId,
-      tier: 'Bridger',
-      sessionCount: 0,
-      rating: 0
-    });
-    console.log("Created Teachertopicstats for teacher");
-  }
+      if (!statExists) {
+        await Teachertopicstats.create({
+          teacherId,
+          node_id:topicId,
+          tier: 'Bridger',
+          sessionCount: 0,
+          rating: 0
+        });
+        console.log("Created Teachertopicstats for teacher");
+      }
 
       if (topic) {
         const currentTeacherIds = Array.isArray(topic.qualified_teacher_ids) ? topic.qualified_teacher_ids : [];
@@ -471,10 +470,10 @@ export const getQualifiedTopics = async (req, res) => {
 
     const topics =  await Teachertopicstats.findAll({
       where: { teacherId:userId },
- include: [
+      include: [
         {
           model: CatalogueNode,
-          as: "Topic",
+          // as: "Topic",
           attributes: ['node_id', 'name',"parent_id"]
         },
       

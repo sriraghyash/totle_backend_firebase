@@ -368,12 +368,12 @@ export const getMyProgression = async (req, res) => {
       include: [
         {
           model: CatalogueNode,
-          as: "Topic",
+          // as: "Topic",
           attributes: ['node_id', 'name', 'parent_id']
         },
         {
           model: User,
-          as: "teacher",
+          // as: "teacher",
           attributes: ['id', 'location']
         }
       ]
@@ -558,7 +558,7 @@ export const getMyQualifiedTopics = async (req, res) => {
       include: [
         {
           model: CatalogueNode,
-          as: "Topic",
+          // as: "Topic",
           attributes: ["node_id", "name", "parent_id"]
         }
       ]
@@ -608,7 +608,7 @@ export const getMyTopicsWithStats = async (req, res) => {
       include: [
         {
           model: CatalogueNode,
-          as: "Topic",
+          // as: "Topic",
           attributes: ["node_id", "name", "parent_id"]
         }
       ]
