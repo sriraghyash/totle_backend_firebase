@@ -83,6 +83,14 @@ const User = sequelize1.define(
       type: DataTypes.STRING,
       allowNull: true,
     },
+    latitude: {
+      type: DataTypes.FLOAT,
+      allowNull: true,
+    },
+    longitude: {
+      type: DataTypes.FLOAT,
+      allowNull: true,
+    },
     profilePictureUrl: {
       type: DataTypes.TEXT, // ✅ Store image as BLOB
       allowNull: true,

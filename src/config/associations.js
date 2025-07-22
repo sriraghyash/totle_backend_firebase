@@ -17,6 +17,7 @@ import { CatalogueNode } from "../Models/CatalogModels/catalogueNode.model.js";
 import { TestFlag } from "../Models/TestflagModel.js";
 import { Test } from "../Models/test.model.js";
 import { SupportQueriesModel } from "../Models/SupportModels/SupportQueriesModel.js";
+import { Session } from "../Models/SessionModel.js";
 // import { Category } from "../Models/CatalogModels/CategoryModel.js";
 // import { Grade } from "../Models/CatalogModels/GradeModel.js";
 // import { Subject } from "../Models/CatalogModels/SubjectModel.js";
@@ -87,6 +88,17 @@ TestFlag.belongsTo(Test, { foreignKey: 'test_id', as: 'test' });
 Test.hasMany(TestFlag, { foreignKey: 'test_id', as: 'flags' });
   SupportQueriesModel.belongsTo(User, {foreignKey: "user_id",});
   User.hasMany(SupportQueriesModel, {foreignKey: "user_id", onDelete: "CASCADE"});
+
+  Session.belongsTo(User, {
+    foreignKey: 'teacher_id',
+    as: 'teacher', // <- REQUIRED for eager loading with { include: [{ model: User, as: 'teacher' }] }
+  });
+
+  User.hasMany(Session, {
+    foreignKey: 'teacher_id',
+    as: 'teachingSessions', // <- optional but good for reverse lookup
+  });
+
 
   Department.hasMany(Department, {
     foreignKey: 'parentId',

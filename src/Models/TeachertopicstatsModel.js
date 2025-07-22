@@ -28,5 +28,9 @@ rating: {
 }
 
 },{
+  schema: 'catalog', // Private schema
+  timestamps: true, // Enable createdAt and updatedAt fields
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
  tableName: 'teacher_topic_stats',
 })
