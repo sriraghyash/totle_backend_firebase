@@ -44,6 +44,8 @@ import objectiveRoutes from './routes/Objectives/objective.routes.js'; // adjust
 import progressRoutes from "./routes/progressTracker.routes.js";
 import insights from "./routes/insights.routes.js"
 import keyResultRoutes from './routes/Objectives/keyResult.routes.js'; // adjust path if necessary
+import nucleusRoutes from "./routes/nucleus.routes.js";
+
 
 // After other `app.use` statements for /api/*
 
@@ -88,6 +90,7 @@ app.use('/api/objectives', keyResultRoutes); // Use the key result routes
 app.use("/api/teach",insights);
 app.use("/api/progress",progressRoutes);
 
+app.use("/api/nucleus", nucleusRoutes);
 
 app.get("/", (req, res) => {
   res.send("✅ TOTLE Backend API is running!");

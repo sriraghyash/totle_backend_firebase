@@ -51,3 +51,4 @@ Session.belongsTo(CatalogueNode, {
   foreignKey: "topic_id",
   as: "topic",
 });
+
