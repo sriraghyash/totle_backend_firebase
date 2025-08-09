@@ -51,11 +51,6 @@ const User = sequelize1.define(
       type: DataTypes.ENUM("male", "female", "other"),
       allowNull: true,
     },
-    gender_updated_once: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
-      allowNull: false,
-    },
     known_language_ids: {
       type: DataTypes.ARRAY(DataTypes.INTEGER), // ✅ Stores multiple language IDs
       allowNull: true,
