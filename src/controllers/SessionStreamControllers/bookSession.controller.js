@@ -81,8 +81,8 @@ export const bookFreeSession = async (req, res) => {
 
 
     if (availableSessions.length < 2) {
-      console.warn("⚠️ Not enough available sessions for booking", availableSessions.length);
-      return res.status(404).json({ error: true, message: "Not enough available sessions" });
+      console.warn("⚠️ Not enough teachers are available for booking", availableSessions.length);
+      return res.status(404).json({ error: true, message: "Not enough available teachers" });
     }
 
     // 🧠 Match Scoring
