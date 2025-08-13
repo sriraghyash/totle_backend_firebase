@@ -26,6 +26,8 @@ import testRoutes from "./routes/test.routes.js";
 import streamRoutes from "./routes/SessionStreamRoutes/stream.routes.js";
 import sessionRoutes from "./routes/SessionRoutes/session.routes.js";
 import paymentRoutes from "./routes/PaymentRoutes/Payment.route.js";
+import uploadRoutes from './routes/upload.js'; // adjust path if needed
+
 // import sessionRoutes from './routes/session.routs.js';
 import http from "http";
 import { Server } from "socket.io";
@@ -87,7 +89,8 @@ app.use('/api/objectives', objectiveRoutes);
 app.use('/api/objectives', keyResultRoutes); // Use the key result routes
 app.use("/api/teach",insights);
 app.use("/api/progress",progressRoutes);
-
+app.use("/uploads", express.static("uploads"));
+app.use('/', uploadRoutes);
 
 app.get("/", (req, res) => {
   res.send("✅ TOTLE Backend API is running!");
@@ -104,12 +107,18 @@ app.get("/db", async (req, res) => {
   }
 });
 
+app.use('/upload', (req, res, next) => {
+  console.log("Upload route hit");
+  next();
+});
+
+
 const startServer = async () => {
   try {
     // Step 1: Run the syncDatabase function to set up the database before starting the server
-    //  await syncDatabase();  // Automatically run the syncDatabase on server start
+     await syncDatabase();  // Automatically run the syncDatabase on server start
 
-     await defineModelRelationships();
+     //await defineModelRelationships();
 
     // Step 2: Once syncDatabase has finished, start the server
     const PORT = process.env.PORT || 5000;
