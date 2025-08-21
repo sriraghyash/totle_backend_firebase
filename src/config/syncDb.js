@@ -12,6 +12,7 @@ import { ProgressionThresholds } from "../Models/progressionThresholds.model.js"
 import "../Models/CatalogModels/catalogueNode.model.js";
 import "../Models/TeachertopicstatsModel.js";
 import { KeyResult } from '../Models/Objectives/keyresult.model.js'; // ✅ Add this line
+import Endeavour from "../Models/Endeavour.js"; // ✅ Import Endeavour model
 
 dotenv.config();
 
@@ -84,6 +85,7 @@ async function createDatabaseIfNeeded(dbName) {
     console.error("❌ Error creating database:", error);
   }
 }
+
 // At the bottom of syncDb.js
 export async function defineModelRelationships() {
   const defineRelationships = await import("../config/associations.js");
@@ -121,12 +123,11 @@ export async function syncDatabase() {
     await Blog.sync({ alter: true });
 
     const { Objective } = await import("../Models/Objectives/objective.model.js");
-await Objective.sync({ alter: true });
-console.log("✅ Objective table synced successfully!");
+    await Objective.sync({ alter: true });
+    console.log("✅ Objective table synced successfully!");
 
-await KeyResult.sync({ alter: true });
-console.log("✅ KeyResult table synced successfully!");
-
+    await KeyResult.sync({ alter: true });
+    console.log("✅ KeyResult table synced successfully!");
 
     const { Survey } = await import("../Models/SurveyModels/SurveyModel.js");
     await Survey.sync({ alter: true });
@@ -144,6 +145,9 @@ console.log("✅ KeyResult table synced successfully!");
     await ProgressionThresholds.sync({ alter: true });
     console.log("✅ ProgressionThresholds table synced successfully!");
 
+    // ✅ Sync Endeavour table
+    await Endeavour.sync({ alter: true });
+    console.log("✅ Endeavour table synced successfully!");
 
     await sequelize1.sync({ alter: true });
 
@@ -153,7 +157,6 @@ console.log("✅ KeyResult table synced successfully!");
     await SupportQueriesMasterSeeder();
     await createSuperAdminIfNeeded();
     // await seedCatalogueDomains();
-
 
   } catch (error) {
     console.error('❌ Error syncing database:', error);
